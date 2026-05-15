@@ -1,67 +1,75 @@
-#include <dt-bindings/zmk/mouse.h>
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/mouse.h>
+#include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/zmk/outputs.h>
+
 #include "../include/zmk-helpers/key-labels/36.h"
 #include "../include/zmk-helpers/helper.h"
-#include <dt-bindings/zmk/bt.h>
 
 #define DEFAULT 0
 #define NUM 1
 #define SYM 2
+#define BT 3
 
-/* Global defaults */
 #define QUICK_TAP_MS 175
 
+/* Global defaults */
+
 &sk {
-  release-after-ms = <900>;
-  quick-release;
+    release-after-ms = <900>;
+    quick-release;
 };
 
-&sl { // Allow sticky mods to chord across sticky layers.
-  ignore-modifiers;
+&sl {
+    /* Allow sticky mods to chord across sticky layers. */
+    ignore-modifiers;
 };
 
 &lt {
-  flavor = "balanced";
-  tapping-term-ms = <200>;
-  quick-tap-ms = <QUICK_TAP_MS>;
+    flavor = "balanced";
+    tapping-term-ms = <200>;
+    quick-tap-ms = <QUICK_TAP_MS>;
 };
 
-#define KEYS_L LT0 LT1 LT2 LT3 LT4 LM0 LM1 LM2 LM3 LM4 LB0 LB1 LB2 LB3 LB4  // left-hand keys
-#define KEYS_R RT0 RT1 RT2 RT3 RT4 RM0 RM1 RM2 RM3 RM4 RB0 RB1 RB2 RB3 RB4  // right-hand keys
-#define THUMBS LH2 LH1 LH0 RH0 RH1 RH2                                      // thumb keys
+#define KEYS_L LT0 LT1 LT2 LT3 LT4 LM0 LM1 LM2 LM3 LM4 LB0 LB1 LB2 LB3 LB4
+#define KEYS_R RT0 RT1 RT2 RT3 RT4 RM0 RM1 RM2 RM3 RM4 RB0 RB1 RB2 RB3 RB4
+#define THUMBS LH2 LH1 LH0 RH0 RH1 RH2
 
-#define MAKE_HRM(NAME, HOLD, TAP, TRIGGER_POS)                                 \
-  ZMK_HOLD_TAP(NAME, bindings = <HOLD>, <TAP>; flavor = "balanced";            \
-               tapping-term-ms = <280>; quick-tap-ms = <QUICK_TAP_MS>;         \
-               require-prior-idle-ms = <75>; hold-trigger-on-release;         \
-               hold-trigger-key-positions = <TRIGGER_POS>;)
+#define MAKE_HRM(NAME, HOLD, TAP, TRIGGER_POS) \
+    ZMK_HOLD_TAP(NAME, \
+        bindings = <HOLD>, <TAP>; \
+        flavor = "balanced"; \
+        tapping-term-ms = <280>; \
+        quick-tap-ms = <QUICK_TAP_MS>; \
+        require-prior-idle-ms = <75>; \
+        hold-trigger-on-release; \
+        hold-trigger-key-positions = <TRIGGER_POS>; \
+    )
 
-MAKE_HRM(hml, &kp, &kp, KEYS_R THUMBS) // Left-hand HRMs.
-MAKE_HRM(hmr, &kp, &kp, KEYS_L THUMBS) // Right-hand HRMs.
+MAKE_HRM(hml, &kp, &kp, KEYS_R THUMBS)
+MAKE_HRM(hmr, &kp, &kp, KEYS_L THUMBS)
 
-// Hack: Make HRM combos tap-only (cf, ZMK issue #544).
-#define ZMK_COMBO_8(NAME, TAP, POS, LAYERS, COMBO_MS, IDLE_MS, HOLD, SIDE)     \
-  MAKE_HRM(hm_combo_##NAME, &kp, TAP, SIDE THUMBS)                             \
-  ZMK_COMBO_6(NAME, &hm_combo_##NAME HOLD 0, POS, LAYERS, COMBO_MS, IDLE_MS)
+/* Hack: Make HRM combos tap-only. */
+#define ZMK_COMBO_8(NAME, TAP, POS, LAYERS, COMBO_MS, IDLE_MS, HOLD, SIDE) \
+    MAKE_HRM(hm_combo_##NAME, &kp, TAP, SIDE THUMBS) \
+    ZMK_COMBO_6(NAME, &hm_combo_##NAME HOLD 0, POS, LAYERS, COMBO_MS, IDLE_MS)
 
-&lt {
-    tapping-term-ms = <300>;
-    quick_tap_ms = <200>;
-    flavor = "hold-preferred";
+&caps_word {
+    continue-list = <BACKSPACE DELETE>;
 };
-
-&caps_word { continue-list = <UNDERSCORE MINUS BACKSPACE DELETE>; };
 
 / {
-    chosen { zmk,matrix_transform = &default_transform; };
+    chosen {
+        zmk,matrix_transform = &default_transform;
+    };
 
     macros {
-        godecl: new_macro {
+        godecl: godecl {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
             bindings = <&kp COLON &kp EQUAL>;
-            label = "NEW_MACRO";
+            label = "GODECL";
         };
 
         gonoteq: gonoteq {
@@ -74,28 +82,44 @@ MAKE_HRM(hmr, &kp, &kp, KEYS_L THUMBS) // Right-hand HRMs.
         vim_left_window: vim_left_window {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&macro_press &kp LCTRL>, <&macro_tap &kp W>, <&macro_release &kp LCTRL>, <&macro_tap &kp LEFT_ARROW>;
+            bindings =
+                <&macro_press &kp LCTRL>,
+                <&macro_tap &kp W>,
+                <&macro_release &kp LCTRL>,
+                <&macro_tap &kp LEFT_ARROW>;
             label = "VIM_LEFT_WINDOW";
         };
 
         vim_right_window: vim_right_window {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&macro_press &kp LCTRL>, <&macro_tap &kp W>, <&macro_release &kp LCTRL>, <&macro_tap &kp RIGHT_ARROW>;
+            bindings =
+                <&macro_press &kp LCTRL>,
+                <&macro_tap &kp W>,
+                <&macro_release &kp LCTRL>,
+                <&macro_tap &kp RIGHT_ARROW>;
             label = "VIM_RIGHT_WINDOW";
         };
 
         vim_top_window: vim_top_window {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&macro_press &kp LCTRL>, <&macro_tap &kp W>, <&macro_release &kp LCTRL>, <&macro_tap &kp UP_ARROW>;
+            bindings =
+                <&macro_press &kp LCTRL>,
+                <&macro_tap &kp W>,
+                <&macro_release &kp LCTRL>,
+                <&macro_tap &kp UP_ARROW>;
             label = "VIM_TOP_WINDOW";
         };
 
         vim_bottom_window: vim_bottom_window {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&macro_press &kp LCTRL>, <&macro_tap &kp W>, <&macro_release &kp LCTRL>, <&macro_tap &kp DOWN_ARROW>;
+            bindings =
+                <&macro_press &kp LCTRL>,
+                <&macro_tap &kp W>,
+                <&macro_release &kp LCTRL>,
+                <&macro_tap &kp DOWN_ARROW>;
             label = "VIM_BOTTOM_WINDOW";
         };
     };
@@ -105,28 +129,37 @@ MAKE_HRM(hmr, &kp, &kp, KEYS_L THUMBS) // Right-hand HRMs.
 
         default_layer {
             bindings = <
-&kp Q        &kp W        &kp E         &kp R  &kp T              &kp Y        &kp U          &kp I         &kp O        &kp P         
-&hml LGUI A  &hml LALT S  &hml LCTRL D  &hml LSHFT F &kp G        &kp H       &hmr RSHFT J   &hmr LCTRL K   &hmr LALT L  &hmr LGUI SEMI
-&kp Z        &kp X        &kp C         &kp V  &kp B              &kp N        &kp M          &kp COMMA     &kp DOT      &kp FSLH      
-                     &kp ESCAPE  &mo 1  &lt 2 SPACE                       &lt 1 ENTER  &kp BACKSPACE
+                &kp Q        &kp W        &kp E        &kp R        &kp T        &kp Y        &kp U        &kp I        &kp O        &kp P
+                &hml LGUI A  &hml LALT S  &hml LCTRL D &hml LSHFT F &kp G        &kp H        &hmr RSHFT J &hmr LCTRL K &hmr LALT L  &hmr LGUI SEMI
+                &kp Z        &kp X        &kp C        &kp V        &kp B        &kp N        &kp M        &kp COMMA    &kp DOT      &kp FSLH
+                &kp ESCAPE   &mo NUM      &lt SYM SPACE              &lt NUM ENTER              &kp BACKSPACE
             >;
         };
 
         num_layer {
             bindings = <
-&kp EQUAL  &kp PLUS   &kp MINUS  &kp LEFT_BRACE  &kp RIGHT_BRACE    &kp LEFT_BRACKET  &kp RIGHT_BRACKET  &kp UNDER  &kp LPAR  &kp RPAR
-&kp N1     &kp N2     &kp N3     &kp N4          &kp N5             &kp N6            &kp N7             &kp N8     &kp N9    &kp N0   
-&kp TILDE  &kp GRAVE  &kp COLON     &kp SQT      &trans             &trans            &godecl            &gonoteq   &kp TAB    &kp BACKSLASH
-                      &trans     &trans          &trans             &trans            &trans         
+                &kp EQUAL    &kp PLUS     &kp MINUS    &kp LEFT_BRACE &kp RIGHT_BRACE   &kp LEFT_BRACKET &kp RIGHT_BRACKET &kp UNDER &kp LPAR &kp RPAR
+                &kp N1       &kp N2       &kp N3       &kp N4         &kp N5            &kp N6           &kp N7            &kp N8    &kp N9   &kp N0
+                &kp TILDE    &kp GRAVE    &kp COLON    &kp SQT        &sl BT            &trans           &godecl           &gonoteq  &kp TAB  &kp BACKSLASH
+                &trans       &trans       &trans                       &trans                         &trans
             >;
         };
 
         navlayer {
             bindings = <
-&trans  &trans          &mmv MOVE_UP    &mkp LCLK        &trans    &trans  &vim_left_window &vim_bottom_window  &vim_top_window  &vim_right_window 
-&trans  &mmv MOVE_LEFT  &mmv MOVE_DOWN  &mmv MOVE_RIGHT  &trans    &trans  &kp LEFT_ARROW   &kp DOWN            &kp UP_ARROW     &kp RIGHT
-&trans  &trans          &trans          &mkp RCLK        &trans    &trans  &trans           &trans              &trans           &trans   
-                        &trans          &trans           &trans    &trans  &trans           &trans
+                &trans       &trans       &mmv MOVE_UP   &mkp LCLK      &trans       &trans       &vim_left_window &vim_bottom_window &vim_top_window &vim_right_window
+                &trans       &mmv MOVE_LEFT &mmv MOVE_DOWN &mmv MOVE_RIGHT &trans     &trans       &kp LEFT_ARROW   &kp DOWN           &kp UP_ARROW    &kp RIGHT
+                &trans       &trans       &trans         &mkp RCLK      &trans       &trans       &trans           &trans             &trans          &trans
+                &trans       &trans       &trans                         &trans                         &trans
+            >;
+        };
+
+        bt_layer {
+            bindings = <
+                &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4   &out OUT_BLE &bt BT_PRV &bt BT_NXT &bt BT_CLR &bt BT_CLR_ALL
+                &out OUT_USB &out OUT_TOG &none        &none        &none          &none        &none      &none      &none      &none
+                &none        &none        &none        &none        &none          &none        &none      &none      &none      &none
+                &to DEFAULT  &none        &none                      &none                      &none
             >;
         };
     };
